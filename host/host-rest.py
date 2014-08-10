@@ -21,9 +21,18 @@ def register_service():
   
 @get('/services/invoke/<image>/<service_name>')
 def invoke_service():
-  print 'Invoking Docker container ' + image + '...'
-  code = subprocess.call(['sudo', 'docker', 'run', image, '/bin/echo', '"Hello World"'])
-  return code
+    print 'Invoking Docker container ' + image + '...'
+  
+    iprot = TJSONProtocol(TMemoryBuffer(request.body.getvalue()))
+    oprot = TJSONProtocol(TMemoryBuffer())
+ 
+    # MyLoginHandler defines "login(username, password): SessionKey"
+    processor = SumoService.Processor(MyLoginHandler())  
+    processor.process(iprot, oprot)
+    return oprot.trans.getvalue()
+    
+    #code = subprocess.call(['sudo', 'docker', 'run', image, '/bin/echo', '"Hello World"'])
+    #return code
 
 # Start the server.
 run(host='localhost', port=8080, debug=True)
