@@ -1,13 +1,13 @@
-FROM ubuntu
+FROM ubuntu:14.04
 
 MAINTAINER Oliver Lade <piemaster21@gmail.com>
+# See http://sumo-sim.org/userdoc/Installing/Linux_Build.html
 
-RUN sudo apt-get update
-RUN sudo apt-get install software-properties-common
-RUN sudo add-apt-repository ppa:sumo/stable
-RUN sudo apt-get update
+RUN apt-get update
+RUN apt-get install -qq wget g++ make libxerces-c3.1 libxerces-c3-dev
 
-RUN apt-get -qq install sumo sumo-tools sumo-doc ruby-dev libssl-dev
-RUN gem install puma
-
-RUN echo "run Proc.new { |env| ['200', {'Content-Type' => 'text/html'}, ['get rack\'d']] }" >> /opt/config.ru
+RUN wget http://downloads.sourceforge.net/project/sumo/sumo/version%200.21.0/sumo-src-0.21.0.tar.gz -O sumo-src-0.21.0.tar.gz
+RUN tar xzf sumo-src-0.21.0.tar.gz
+RUN cd sumo-0.21.0/
+RUN ./configure && make install
+RUN sumo
