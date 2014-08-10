@@ -19,4 +19,5 @@ def register_service():
   code = subprocess.call(['sudo', 'docker', 'run', image, '/bin/echo', '"Hello World"'])
   return code
 
+# Start the server.
 run(host='localhost', port=8080, debug=True)
