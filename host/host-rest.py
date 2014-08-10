@@ -1,6 +1,8 @@
 # Public-facing HTTP REST server. Allows service discovery and invocation.
 
-from bottle import route, run, template
+import subprocess
+
+from bottle import post, request, route, run, template
 
 @route('/hello')
 def index():
@@ -9,5 +11,12 @@ def index():
 @route('/hello/<name>')
 def index_named(name):
     return template('<b>Hello {{name}}</b>!\n', name=name)
+    
+@post('/services/register')
+def register_service():
+  image = request.params.image
+  print 'Registering Docker container ' + image + '...'
+  code = subprocess.call(['sudo', 'docker', 'run', image, '/bin/echo', '"Hello World"'])
+  return code
 
 run(host='localhost', port=8080, debug=True)
