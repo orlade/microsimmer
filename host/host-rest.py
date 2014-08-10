@@ -18,6 +18,12 @@ def register_service():
   print 'Registering Docker container ' + image + '...'
   code = subprocess.call(['sudo', 'docker', 'run', image, '/bin/echo', '"Hello World"'])
   return code
+  
+@get('/services/invoke/<image>/<service_name>')
+def invoke_service():
+  print 'Invoking Docker container ' + image + '...'
+  code = subprocess.call(['sudo', 'docker', 'run', image, '/bin/echo', '"Hello World"'])
+  return code
 
 # Start the server.
 run(host='localhost', port=8080, debug=True)
