@@ -29,13 +29,15 @@ class TAmqpClient(TTransportBase):
         self.__connection.close()
 
     def isOpen(self):
-        return self.__connection is not None and self.__connection.is_alive()
+        return self.__channel is not None and self.__channel.is_open
 
     def read(self, sz=-1):
-        return self.__channel.basic_get(self.queue)
+        return self.__channel.basic_get(queue=self.queue)
 
     def write(self, buf):
-        self.__channel.basic_publish(buf, exchange=self.exchange, routing_key=self.queue)
+        msg = amqp.Message(buf)
+        msg.properties['delivery_mode'] = 2
+        self.__channel.basic_publish(msg, exchange=self.exchange, routing_key=self.queue)
 
     def flush(self):
         pass

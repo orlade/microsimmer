@@ -1,19 +1,13 @@
 from host.server.transport.TAmqpClient import TAmqpClient
 from unit_tests.util import *
 
-params = {
-    'host': 'localhost:5672',
-    'userid': 'worker',
-    'password': 'worker',
-    'virtual_host': '/',
-    'insist': False,
-}
 
-
-class TestTAmqpClient:
+class TestTAmqpClient():
     def setup(self):
-        self.client = TAmqpClient(params, TEST_EXCHANGE, TEST_REQUEST_QUEUE)
+        self.client = TAmqpClient(AMQP_PARAMS, TEST_EXCHANGE, TEST_REQUEST_QUEUE)
 
+    def teardown(self):
+        purge_test_queues()
 
     def test_isOpen(self):
         assert not self.client.isOpen()
@@ -31,13 +25,20 @@ class TestTAmqpClient:
         assert_that(is_not(self.client.isOpen()))
 
     def test_read(self):
-        pass
+        self.client.open()
+        body = 'Foo'
+        publish_message(body)
+        msg = self.client.read()
+        assert_that(msg.body, equal_to(body))
 
     def test_readAll(self):
         pass
 
     def test_write(self):
-        pass
+        self.client.open()
+        body = 'Foo'
+        self.client.write(body)
+        assert_that(channel.basic_get(queue=self.client.queue).body, equal_to(body))
 
     def test_flush(self):
         pass

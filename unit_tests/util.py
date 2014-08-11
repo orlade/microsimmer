@@ -25,14 +25,19 @@ channel.queue_declare(queue=TEST_RESULT_QUEUE, durable=True, auto_delete=False)
 channel.queue_bind(queue=TEST_RESULT_QUEUE, exchange=TEST_EXCHANGE, routing_key='res')
 
 
-def publish_message(body='Hello, World!'):
+def publish_message(body='Hello, World!', routing_key='req'):
     msg = amqp.Message(body)
     msg.properties['delivery_mode'] = 2
-    channel.basic_publish(msg, exchange=TEST_EXCHANGE, routing_key='req')
+    channel.basic_publish(msg, exchange=TEST_EXCHANGE, routing_key=routing_key)
 
 
 def count_messages(queue):
     return channel.queue_declare(queue=queue, passive=True)[1]
+
+
+def purge_test_queues():
+    channel.queue_purge(TEST_REQUEST_QUEUE)
+    channel.queue_purge(TEST_RESULT_QUEUE)
 
 
 def assert_queue_size(sizes):

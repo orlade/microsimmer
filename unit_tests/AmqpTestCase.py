@@ -12,5 +12,4 @@ class AmqpTestCase:
         """
         Purges the test queues.
         """
-        channel.queue_purge(TEST_REQUEST_QUEUE)
-        channel.queue_purge(TEST_RESULT_QUEUE)
+        purge_test_queues()
