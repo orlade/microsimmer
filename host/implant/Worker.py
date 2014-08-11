@@ -72,7 +72,5 @@ class Worker:
         self._init_channel()
         self._init_queues()
 
-        print("Processing")
         self.channel.basic_consume(queue=self.requests, callback=self.handle_message, no_ack=True)
-        print("Processed")
         self.connection.close()

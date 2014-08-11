@@ -1,9 +1,9 @@
 from host.implant.Worker import Worker
 
-import meta
+from sumo.api import meta
 
 from thrift.transport.TTransport import TMemoryBuffer
-from thrift.protocol.TJSONProtocol import TJSONProtocol
+from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
 class ThriftWorker(Worker):
 
@@ -14,7 +14,7 @@ class ThriftWorker(Worker):
         self.results = result_queue
         self.connection = None
 
-        self.processor = meta.build_processor()
+        self.processor = meta.build_processor('sumo')
 
     def process(self, body):
         """
@@ -24,8 +24,8 @@ class ThriftWorker(Worker):
         """
 
         # Create a protocol to read/write messages from/to AMQP.
-        iprot = TJSONProtocol(TMemoryBuffer(json))
-        oprot = TJSONProtocol(TMemoryBuffer())
+        iprot = TBinaryProtocol(TMemoryBuffer(body))
+        oprot = TBinaryProtocol(TMemoryBuffer())
         # Process messages from AMQP and put the results back on the result queue.
         self.processor.process(iprot, oprot)
 

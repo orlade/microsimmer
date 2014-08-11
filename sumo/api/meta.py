@@ -3,8 +3,7 @@
 import sys
 sys.path.append('gen-py')
 
-from api.ttypes import *
-from api import SumoService
+from services import SumoService
 from handler import SumoServiceHandler
 
 def get_id():
