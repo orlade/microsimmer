@@ -2,11 +2,13 @@ import os
 import sys
 import importlib
 
+from host.system.constants import PACKAGE_ROOT
+
 THRIFT_FILES = ('ttypes.py', 'constants.py', '__init__.py')
 
 
 class ServiceLoader:
-    def __init__(self, root):
+    def __init__(self, root=PACKAGE_ROOT):
         """
         :param root: The host directory into which all models IDLs are compiled (in their own subdirectories).
         """

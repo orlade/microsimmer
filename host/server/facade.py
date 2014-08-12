@@ -1,4 +1,5 @@
+from host.server.rest import RestServer
 
 
 def init():
-    pass
+    RestServer().run()

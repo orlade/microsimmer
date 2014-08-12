@@ -4,6 +4,8 @@ Contains classes wrapping various Docker functionality at the core of Computome.
 
 import subprocess
 
+from host.system.constants import PACKAGE_ROOT
+
 
 class Container:
     """
@@ -53,7 +55,7 @@ class Container:
 
 
 class ComputomeContainer(Container):
-    def compile_thrift(self, host_dir):
+    def compile_thrift(self, host_dir=PACKAGE_ROOT):
         """
         Executes the Docker command necessary to compile the image's Thrift specification into the given directory on
         the host machine.
