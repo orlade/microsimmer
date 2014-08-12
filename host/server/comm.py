@@ -8,11 +8,8 @@ class ThriftServer:
 
 
 class ThriftClient:
-    def __init__(self, service):
-        ServiceClass = SumoService
-
-        self.service = service
-        self.method = method
+    def __init__(self, ServiceClass):
+        self.ServiceClass = ServiceClass
 
         # Create transports.
         self.__treq = TAmqpClient(AMQP_PARAMS, TEST_EXCHANGE, TEST_REQUEST_QUEUE)
@@ -23,9 +20,9 @@ class ThriftClient:
 
         self.client = ServiceClass.Client(req_prot, res_prot)
 
-        product = client.multiply(4, 5)
-        print '4*5=%d' % (product)  # Close!
-        transport.close()
+        # product = client.multiply(4, 5)
+        # print '4*5=%d' % (product)  # Close!
+        # transport.close()
 
 
     def send(self, method, arguments):

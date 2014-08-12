@@ -1,7 +1,9 @@
 from mock import MagicMock
 from host.system.docker import Container, ComputomeContainer
 
+import os
 import subprocess
+from unit_tests.test_host.test_system.test_models import TEST_PACKAGE_DIR
 
 TEST_IMAGE = 'scratch'
 
@@ -39,11 +41,10 @@ class TestComputomeContainer:
         subprocess.call.reset_mock()
 
     def test_compile_thrift(self):
-        target = '/var/computome/services/scratch'
-        self.container.compile_thrift(target)
+        self.container.compile_thrift(TEST_PACKAGE_DIR)
 
-        mount = '%s:%s' % (target, '/_output')
-        command = 'thrift --gen py -o /_output /api/services.thrift'
+        mount = '%s:%s' % (TEST_PACKAGE_DIR, '/_output')
+        command = 'thrift --gen py -o /_output/scratch /api/services.thrift'
         arguments = ['sudo', 'docker', 'run', '-v', mount, TEST_IMAGE]
         arguments += command.split(' ')
         subprocess.call.assert_called_once_with(arguments)

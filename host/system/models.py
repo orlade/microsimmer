@@ -50,6 +50,7 @@ class ServiceLoader:
         """
         service_dir = os.path.join(self.root, package, 'gen-py', 'services')
         sys.path.append(service_dir)
+        print('Added %s to path' % service_dir)
         return importlib.import_module(service)
 
     @classmethod

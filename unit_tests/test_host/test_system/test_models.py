@@ -5,9 +5,9 @@ from hamcrest.library.collection.issequence_onlycontaining import only_contains
 
 from host.system.models import ServiceLoader
 
-TEST_DIR = os.path.abspath('/tmp')
+TEST_PACKAGE_DIR = os.path.abspath('/tmp')
 TEST_PACKAGE_NAMES = ('a', 'b', 'c')
-TEST_PACKAGES = map(lambda f: os.path.join(TEST_DIR, f), TEST_PACKAGE_NAMES)
+TEST_PACKAGES = map(lambda f: os.path.join(TEST_PACKAGE_DIR, f), TEST_PACKAGE_NAMES)
 
 
 def touch(fname):
@@ -16,8 +16,8 @@ def touch(fname):
 
 
 def setup_test_dirs():
-    if not os.path.isdir(TEST_DIR):
-        os.makedirs(TEST_DIR)
+    if not os.path.isdir(TEST_PACKAGE_DIR):
+        os.makedirs(TEST_PACKAGE_DIR)
     for package in TEST_PACKAGES:
         if not os.path.isdir(package):
             os.makedirs(package)
@@ -34,7 +34,7 @@ class TestServiceLoader:
         setup_test_dirs()
 
     def setup(self):
-        self.loader = ServiceLoader(TEST_DIR)
+        self.loader = ServiceLoader(TEST_PACKAGE_DIR)
 
     def test_list_packages(self):
         packages = self.loader.list_packages()

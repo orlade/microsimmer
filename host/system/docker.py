@@ -12,8 +12,12 @@ class Container:
     API for an object mapping methods onto Docker commands.
     """
 
-    def __init__(self, image):
+    def __init__(self, image, package=None):
+        if package is None:
+            package = image_to_package_name(image)
+
         self.image = image
+        self.package = package
 
     @classmethod
     def _execute(cls, arguments):
@@ -66,5 +70,14 @@ class ComputomeContainer(Container):
         output_dir = '/_output'
         api_dir = '/api'
         mount = '%s:%s' % (host_dir, output_dir)
-        command = 'thrift --gen py -o %s %s/services.thrift' % (output_dir, api_dir)
+        command = 'thrift --gen py -o %s/%s %s/services.thrift' % (output_dir, self.package, api_dir)
         self.run(command, volume_arg=mount)
+
+
+def image_to_package_name(image_id):
+    """
+    Generates a package name for a Docker image based on its ID.
+    :param image_id:
+    :return:
+    """
+    return image_id.replace('/', '_')
