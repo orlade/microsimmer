@@ -8,7 +8,7 @@ class ThriftBuilder:
     def __init__(self):
         pass
 
-    def build(self, json):
+    def convert_json(self, json):
         iprot = TBinaryProtocol(TAmqpClient())
         iprot = TJSONProtocol(TMemoryBuffer(json))
         oprot = TJSONProtocol(TMemoryBuffer())

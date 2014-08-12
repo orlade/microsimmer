@@ -1,1 +1,4 @@
-__author__ = 'Oliver'
+
+
+def init():
+    pass
