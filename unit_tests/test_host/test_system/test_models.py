@@ -1,7 +1,7 @@
 import os
 
 from hamcrest.core import assert_that
-from hamcrest.core.core.isequal import equal_to
+from hamcrest.library.collection.issequence_onlycontaining import only_contains
 
 from host.system.models import ServiceLoader
 
@@ -38,12 +38,12 @@ class TestServiceLoader:
 
     def test_list_packages(self):
         packages = self.loader.list_packages()
-        assert_that(packages, equal_to(TEST_PACKAGES))
+        assert_that(packages, only_contains(*TEST_PACKAGES))
 
     def test_list_services(self):
         services = self.loader.list_services()
         expected = [p.upper() + 'Service' for p in TEST_PACKAGE_NAMES]
-        assert_that(services, equal_to(expected))
+        assert_that(services, only_contains(*expected))
 
     def test_load_service(self):
         module = self.loader.load_service('a', 'AService')
