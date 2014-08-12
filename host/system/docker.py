@@ -15,11 +15,19 @@ class Container:
 
     @classmethod
     def _execute(cls, arguments):
+        """
+        Executes Docker with the given arguments.
+
+        :param arguments: The arguments to follow "sudo docker" on the command line.
+        :return: The response provided by Docker.
+        """
+        # TODO(orlade): Allow return of container stdout.
         return subprocess.call(['sudo', 'docker'] + arguments)
 
     def run(self, command, volume_arg=None):
         """
         Executes the given command in the terminal of the container.
+
         :param command: An array of terms of the command to run.
         :param volume_arg: A string representing the mounting of a host volume to the container. For example,
         host/dir:container/dir[:ro]
@@ -46,14 +54,15 @@ class Container:
 
 class ComputomeContainer(Container):
     def compile_thrift(self, host_dir):
-        pass
+        """
+        Executes the Docker command necessary to compile the image's Thrift specification into the given directory on
+        the host machine.
 
-
-def generate_thrift(image_id):
-    """
-    Copies the Thrift IDL from the Docker image with the given ID and compiles
-    it to the 
-    :param image_id:
-    :return:
-    """
-    pass
+        :param host_dir: The directoy on the host machine in which Thrift's generated "*-gen" directories will be
+        compiled.
+        """
+        output_dir = '/_output'
+        api_dir = '/api'
+        mount = '%s:%s' % (host_dir, output_dir)
+        command = 'thrift --gen py -o %s %s/services.thrift' % (output_dir, api_dir)
+        self.run(command, volume_arg=mount)
