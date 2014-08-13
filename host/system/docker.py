@@ -15,6 +15,7 @@ class Container:
     def __init__(self, image, package=None):
         if package is None:
             package = image_to_package_name(image)
+        assert package
 
         self.image = image
         self.package = package
@@ -28,7 +29,9 @@ class Container:
         :return: The response provided by Docker.
         """
         # TODO(orlade): Allow return of container stdout.
-        return subprocess.call(['sudo', 'docker'] + arguments)
+        arguments = ['sudo', 'docker'] + arguments
+        print('Executing $ %s' % ' '.join(arguments))
+        return subprocess.call(arguments)
 
     def run(self, command, volume_arg=None):
         """
@@ -40,8 +43,8 @@ class Container:
         :return: The result of the Docker invocation.
         """
         # Ensure the command is a list of instructions.
-        if isinstance(command, str):
-            command = command.split(' ')
+        if isinstance(command, basestring):
+            command = str(command).split(' ')
 
         arguments = ['run', self.image] + command
 

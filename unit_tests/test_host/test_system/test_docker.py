@@ -23,6 +23,10 @@ class TestContainer:
         self.container.run(['ls'])
         subprocess.call.assert_called_once_with(['sudo', 'docker', 'run', TEST_IMAGE, 'ls'])
 
+    def test_run_unicode(self):
+        self.container.run(u'foo')
+        subprocess.call.assert_called_once_with(['sudo', 'docker', 'run', TEST_IMAGE, 'foo'])
+
     def test_run_volume(self):
         mount = '/opt:/data'
         self.container.run('ls', volume_arg=mount)

@@ -1,5 +1,5 @@
 import bottle
-from bottle import route, request
+from bottle import get, post, delete, request
 
 from host.server.comm import ThriftClient
 from host.server.registry import Registry
@@ -7,14 +7,7 @@ from host.system.constants import PACKAGE_ROOT
 from host.system.docker import ComputomeContainer
 from host.system.models import ServiceLoader
 
-
-def methodroute(route, method='GET'):
-    def decorator(f):
-        print 'deco', f
-        f.route = route
-        return f
-
-    return decorator
+__server = None
 
 
 class RestServer:
@@ -23,8 +16,9 @@ class RestServer:
             registry = Registry()
         self.registry = registry
         self.reg_root = reg_root
+        global __server
+        __server = self
 
-    @methodroute('/services/register', method='POST')
     def register_package(self):
         """
         Registers a package to a Docker image ID. The request should contain a "docker_id" parameter specifying the ID
@@ -44,12 +38,10 @@ class RestServer:
         return self.registry.register(service, service_class)
 
 
-    @methodroute('/services/<service_id>', method='DELETE')
     def unregister_package(self, service):
         self.registry.unregister(service)
 
 
-    @methodroute('/services/invoke/<image>/<service_name>')
     def invoke(self, service, request):
         ServiceClass = self.registry.get(service)
         client = ThriftClient(ServiceClass)
@@ -61,4 +53,17 @@ class RestServer:
         """
         Starts up the HTTP server on port 80.
         """
+        # TODO(orlade): Replace with decorators on RestServer methods.
+        @post('/services/register')
+        def register():
+            self.register_package()
+
+        @delete('/services/<service_id>')
+        def unregister(service):
+            self.unregister_package(service)
+
+        @get('/services/invoke/<image>/<service_name>')
+        def invoke(image, service):
+            self.invoke(image, service)
+
         bottle.run(host='localhost', port=80, debug=True)
