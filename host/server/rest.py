@@ -40,23 +40,39 @@ class RestServer:
 
         return "Registered %d services in package %s" % (len(service_classes), package)
 
-
     def unregister_package(self, service):
         """
         Unregisters a service module that was previously registered.
         """
         self.registry.unregister(service)
 
-
-    def invoke(self, service, request):
+    def invoke(self, image, service):
         """
         Invokes a method of a previously-registered service class.
-        """
-        ServiceClass = self.registry.get(service)
-        client = ThriftClient(ServiceClass)
-        response = client.send(service, request)
-        return response
 
+        :param image: The Docker image that the service lives inside.
+        :param service: The name of the service method to invoke.
+        :return: The result of the invocation.
+        """
+        # Prepare the arguments to invoke the method with.
+        body = request.json
+
+        # Load the service class to get the Client class from.
+        service_class = self.registry.get(service)
+
+        # Build a wrapper for the invocation.
+        client = ThriftClient(service_class)
+        # Send the invocation to the queue.
+        response = client.send(service, request)
+
+        # Invoke the worker in the container.
+        container = ComputomeContainer(image)
+        # TODO(orlade): Run the worker script.
+        mount_dir = '_mount'
+        # mount = 'implant:/%s:ro' % mount_dir
+        # container.run('python /%s/work.py' % mount_dir, volume_arg=mount)
+
+        return response
 
     def run(self):
         """
@@ -71,6 +87,7 @@ class RestServer:
         def unregister(service):
             return self.unregister_package(service)
 
+        # TODO(orlade): Proper namespacing for services.
         @get('/services/invoke/<image>/<service_name>')
         def invoke(image, service):
             return self.invoke(image, service)
