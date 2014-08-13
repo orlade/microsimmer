@@ -41,17 +41,18 @@ class ServiceLoader:
         # Strip the file extensions.
         return map(lambda f: f.strip('.py'), services)
 
-    def load_service(self, package, service):
+    def load_package(self, package):
         """
-        Loads the module that specifies the requested service.
-        :param package: The package containing the service.
-        :param service: The service to load.
-        :return: The loaded service module.
+        Loads the service class module specified in the requested package.
+
+        :param package: The package containing the services.
+        :return: A map of service names to loaded service modules.
         """
         service_dir = os.path.join(self.root, package, 'gen-py', 'services')
         sys.path.append(service_dir)
-        print('Added %s to path' % service_dir)
-        return importlib.import_module(service)
+        print('Added %s to path, loading modules...' % service_dir)
+        services = self.list_services([package])
+        return {s: importlib.import_module(s) for s in services}
 
     @classmethod
     def is_service_module(cls, name):
