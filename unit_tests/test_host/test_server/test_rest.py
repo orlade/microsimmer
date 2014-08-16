@@ -1,9 +1,11 @@
-import bottle
 import subprocess
+
 from mock import Mock, MagicMock, PropertyMock
+
 from host.server.rest import *
-from host.server.registry import Registry
+from host.middleware.registry import Registry
 from unit_tests.test_host.test_system.test_models import TEST_PACKAGE_DIR
+
 
 bottle.run = Mock()
 

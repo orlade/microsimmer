@@ -2,7 +2,7 @@ import bottle
 from bottle import get, post, delete, request
 
 from host.server.comm import ThriftClient
-from host.server.registry import Registry
+from host.middleware.registry import Registry
 from host.system.constants import PACKAGE_ROOT
 from host.system.docker import ComputomeContainer, image_to_package_name
 from host.system.models import ServiceLoader

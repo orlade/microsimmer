@@ -5,7 +5,7 @@ from hamcrest.library.collection.issequence_onlycontaining import only_contains
 
 from host.system.models import ServiceLoader
 
-TEST_PACKAGE_DIR = os.path.abspath('/tmp')
+TEST_PACKAGE_DIR = os.path.abspath('/tmp/computome')
 TEST_PACKAGE_NAMES = ('a', 'b', 'c')
 TEST_PACKAGES = map(lambda f: os.path.join(TEST_PACKAGE_DIR, f), TEST_PACKAGE_NAMES)
 

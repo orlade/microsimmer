@@ -14,7 +14,7 @@ def setup():
     global reg
     reg = Registry()
 
-from host.server.registry import Registry
+from host.middleware.registry import Registry
 
 def test_register():
     reg.register(TEST_SERVICE, TEST_CLASS)

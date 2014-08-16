@@ -22,7 +22,7 @@ class ServiceLoader:
         """
         :return: A list of name of compiled packages.
         """
-        return filter(os.path.isdir, [os.path.join(self.root, f) for f in os.listdir(self.root)])
+        return filter(self.is_valid_package, [os.path.join(self.root, f) for f in os.listdir(self.root)])
 
     def list_services(self, packages=None):
         """
@@ -36,7 +36,8 @@ class ServiceLoader:
 
         for package in packages:
             services_dir = os.path.join(self.root, package, 'gen-py', 'services')
-            services += filter(self.is_service_module, os.listdir(services_dir))
+            if os.path.isdir(services_dir):
+                services += filter(self.is_service_module, os.listdir(services_dir))
 
         # Strip the file extensions.
         return map(lambda f: f.strip('.py'), services)
@@ -53,6 +54,11 @@ class ServiceLoader:
         print('Added %s to path, loading modules...' % service_dir)
         services = self.list_services([package])
         return {s: importlib.import_module(s) for s in services}
+
+    @staticmethod
+    def is_valid_package(package):
+        num_files = len([name for name in os.listdir(package)])
+        return os.path.isdir(package) and num_files > 0
 
     @classmethod
     def is_service_module(cls, name):
