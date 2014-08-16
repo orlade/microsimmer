@@ -1,14 +1,14 @@
 import sys
+from sumo.api.meta import command
+from sumo.api.util import write_to_file, build_data_filename, generate_random_routes, generate_output_spec, \
+    SECONDS_IN_HOUR, read_file, convert_osm_to_sumo
+
 sys.path.append('gen-py')
 
 import subprocess
 import uuid
 
-from meta import *
-from util import *
-from api.SumoService import Iface
-
-class SumoServiceHandler(Iface):
+class SumoServiceHandler():
     """
     Implements the SumoService interface.
     """
@@ -20,7 +20,7 @@ class SumoServiceHandler(Iface):
         Parameters:
          - arguments: The command line arguments.
         """
-        args = [command()]
+        args = [command]
         for key in arguments.keys():
             args.append(key)
             if arguments[key] is not None:
@@ -39,10 +39,10 @@ class SumoServiceHandler(Iface):
         """
         job = uuid.uuid4()
         
-        net_file_path = '/data/%s%s' % (job, NETWORK_EXTENSION)
-        route_file_path = '/data/%s%s' % (job, ROUTES_EXTENSION)
-        adtl_file_path = '/data/%s%s' % (job, ADDITIONAL_EXTENSION)
-        output_file_path = '/data/%s%s' % (job, OUTPUT_EXTENSION)
+        net_file_path = build_data_filename(job, 'network')
+        route_file_path = build_data_filename(job, 'routes')
+        adtl_file_path = build_data_filename(job, 'additional')
+        output_file_path = build_data_filename(job, 'output')
         
         write_to_file(net_file_path, network)
         write_to_file(route_file_path, generate_random_routes())
@@ -70,7 +70,7 @@ class SumoServiceHandler(Iface):
         Parameters:
          - osm_network: The contents of the .osm file.
         """
-        return self.randomDayHourly(convert_osm_to_sumo(network))
+        return self.randomDayHourly(convert_osm_to_sumo(osm_network))
 
 
 if __name__ == "__main__":

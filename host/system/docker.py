@@ -47,11 +47,14 @@ class Container:
         if isinstance(command, basestring):
             command = str(command).split(' ')
 
-        arguments = ['run', self.image] + command
+        # TODO(orlade): Determine why -t is necessary.
+        arguments = ['run', '-t']
 
         # Insert the volume mounting argument if requested.
         if volume_arg is not None:
-            arguments[1:1] = ['-v', volume_arg]
+            arguments += ['-v', volume_arg]
+
+        arguments += [self.image] + command
 
         return self._execute(arguments)
 

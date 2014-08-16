@@ -13,8 +13,7 @@ def get_id():
 def get_image():
     return 'pie21/sumo-manual'
 
-def command():
-    return 'sumo'
+command = 'sumo'
 
 services = {
     'sumo': {

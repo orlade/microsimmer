@@ -2,7 +2,7 @@
 Converts requests from the server into client calls.
 """
 from host.middleware.registry import Registry
-from host.server.comm import ThriftClient
+from host.middleware.comm import ThriftClient
 from host.system.constants import PACKAGE_ROOT
 from host.system.docker import ComputomeContainer
 from host.system.models import ServiceLoader
@@ -38,30 +38,42 @@ class ClientMediator(object):
 
         return service_classes
 
-    def handle_unregistration(self, service):
-        self.registry.unregister(service)
+    def handle_unregistration(self, package):
+        self.registry.unregister(package)
 
-    def handle_invocation(self, image, service, body):
+    def handle_invocation(self, image, service, method, body):
         """
         Sends a request to invoke the given service through a Client.
         :param image: The Docker image that the service lives in.
-        :param service: The name of the service to invoke.
+        :param service: The name of the service containing the desired method.
+        :param method: The name of the method to invoke.
         :param body: The body of the request containing the arguments.
         :return: The result of the invocation.
         """
         # Load the service class to get the Client class from.
         service_class = self.registry.get(service)
 
+        # Invoke the worker in the container to process the request message once it's sent.
+        self.run_worker(image)
+
         # Build a wrapper for the invocation.
         client = ThriftClient(service_class)
         # Send the invocation to the queue.
-        result = client.send(service, body)
-
-        # Invoke the worker in the container.
-        container = ComputomeContainer(image)
-        # TODO(orlade): Run the worker script.
-        mount_dir = '_mount'
-        # mount = 'implant:/%s:ro' % mount_dir
-        # result = container.run('python /%s/work.py' % mount_dir, volume_arg=mount)
+        # Note: This will block until it receives a response.
+        result = client.send(method, body)
 
         return result
+
+    def run_worker(self, image):
+        """
+        Invokes the worker in the container to pull and process the request message.
+        :param image:
+        :return:
+        """
+        print('Starting remote worker in image %s...' % image)
+        container = ComputomeContainer(image)
+        # TODO(orlade): Run the worker script.
+        implant_dir = '/home/oliver/dev/computome/host/implant'
+        mount_dir = '_mount'
+        mount = '%s:/%s:ro' % (implant_dir, mount_dir)
+        container.run('-t python /%s/work.py' % mount_dir, volume_arg=mount)

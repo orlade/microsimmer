@@ -4,6 +4,8 @@ import amqp
 TEST_EXCHANGE = 'test.computome'
 TEST_REQUEST_QUEUE = 'test.computome.request'
 TEST_RESULT_QUEUE = 'test.computome.result'
+# TODO(orlade): Figure out what this should be
+TEST_ROUTING_KEY = TEST_EXCHANGE
 
 AMQP_PARAMS = {
     'host': 'localhost:5672',

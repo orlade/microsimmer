@@ -6,6 +6,7 @@ from host.server.rest import *
 from host.middleware.registry import Registry
 from unit_tests.test_host.test_system.test_models import TEST_PACKAGE_DIR
 
+TEST_PACKAGE = 'scratch'
 
 bottle.run = Mock()
 
@@ -21,23 +22,8 @@ class TestRest:
         self.rest = RestServer(self.client_mediator)
 
     def test_register_package(self):
-        # The parameters to mock in the request.
-        class MockParams:
-            def __init__(self):
-                self.docker_id = 'scratch'
-                self.package = 'scratch'
-                self.service = 'scratch'
-        params = MockParams()
-
-        type(bottle.request).params = PropertyMock(return_value=params)
-        # subprocess.call = Mock()
-        # ServiceLoader.load_service = Mock(return_value={})
-
-        self.rest.register_package()
-
-        self.client_mediator.handle_registration.assert_called_once_with(params.docker_id, params.package)
-        # subprocess.call.assert_called_once()
-        # ServiceLoader.load_service.assert_called_once()
+        self.rest.register_package(TEST_PACKAGE)
+        self.client_mediator.handle_registration.assert_called_once_with(TEST_PACKAGE, TEST_PACKAGE)
 
 
     def test_unregister(self):
@@ -48,8 +34,9 @@ class TestRest:
 
     def test_invoke(self):
         service = 'Foo'
-        request = '{"a": 1}'
-        self.rest.invoke(service, request)
+        method = 'test'
+        body = {"a": 1}
+        self.rest.invoke(TEST_PACKAGE, service, method, body)
 
 
     def test_run(self):

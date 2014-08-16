@@ -7,6 +7,7 @@ class Worker:
     """
 
     def __init__(self, request_queue, result_queue, exchange='computome'):
+        print('Initialising worker for %s' % request_queue)
         self.exchange = exchange
         self.requests = request_queue
         self.results = result_queue

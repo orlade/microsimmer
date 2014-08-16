@@ -9,4 +9,5 @@ sys.path.append('/api')
 from host.implant.ThriftWorker import ThriftWorker
 
 if __name__ == '__main__':
+    print('Starting worker for computome.request...')
     ThriftWorker('computome.request', 'computome.result').work()
