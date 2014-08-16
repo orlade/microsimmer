@@ -46,8 +46,9 @@ class TestServiceLoader:
         assert_that(services, only_contains(*expected))
 
     def test_load_service(self):
-        module = self.loader.load_service('a', 'AService')
+        module = self.loader.load_package('a')
         assert_that(module is not None)
+        assert_that(module['AService'] is not None)
 
 
 # Classmethod tests

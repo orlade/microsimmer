@@ -13,11 +13,12 @@ bottle.run = Mock()
 class TestRest:
     def __init__(self):
         self.registry = MagicMock(Registry)
+        self.client_mediator = MagicMock(ClientMediator)
         self.rest = None
 
     def setup(self):
-        self.registry.reset_mock()
-        self.rest = RestServer(self.registry, reg_root=TEST_PACKAGE_DIR)
+        self.client_mediator.reset_mock()
+        self.rest = RestServer(self.client_mediator)
 
     def test_register_package(self):
         # The parameters to mock in the request.
@@ -26,20 +27,23 @@ class TestRest:
                 self.docker_id = 'scratch'
                 self.package = 'scratch'
                 self.service = 'scratch'
+        params = MockParams()
 
-        type(bottle.request).params = PropertyMock(return_value=MockParams())
-        subprocess.call = Mock()
-        ServiceLoader.load_service = Mock(return_value={})
+        type(bottle.request).params = PropertyMock(return_value=params)
+        # subprocess.call = Mock()
+        # ServiceLoader.load_service = Mock(return_value={})
 
         self.rest.register_package()
 
-        subprocess.call.assert_called_once()
-        ServiceLoader.load_service.assert_called_once()
+        self.client_mediator.handle_registration.assert_called_once_with(params.docker_id, params.package)
+        # subprocess.call.assert_called_once()
+        # ServiceLoader.load_service.assert_called_once()
 
 
     def test_unregister(self):
         package = 'Foo'
         self.rest.unregister_package(package)
+        self.client_mediator.handle_unregistration.assert_called_once_with(package)
 
 
     def test_invoke(self):

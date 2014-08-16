@@ -1,5 +1,6 @@
 import bottle
 from bottle import get, post, delete, request
+from host.middleware.mediator import ClientMediator
 
 from host.server.comm import ThriftClient
 from host.middleware.registry import Registry
@@ -9,11 +10,10 @@ from host.system.models import ServiceLoader
 
 
 class RestServer:
-    def __init__(self, registry=None, reg_root=PACKAGE_ROOT):
-        if registry is None:
-            registry = Registry()
-        self.registry = registry
-        self.reg_root = reg_root
+    def __init__(self, client_mediator):
+        if client_mediator is None:
+            client_mediator = ClientMediator()
+        self.client_mediator = client_mediator
 
     def register_package(self):
         """
@@ -25,18 +25,7 @@ class RestServer:
         if not package:
             package = image_to_package_name(docker_id)
 
-        print 'Registering Docker container %s...' % docker_id
-
-        container = ComputomeContainer(docker_id)
-        container.compile_thrift()
-
-        # TODO(orlade): Organise the contents of the package better.
-        loader = ServiceLoader(self.reg_root)
-        service_classes = loader.load_package(package)
-
-        # TODO(orlade): Register service classes in a more persistent, reusable way.
-        self.registry.register_dict(service_classes)
-        # TODO(orlade): Register handler methods with services.
+        service_classes = self.client_mediator.handle_registration(docker_id, package)
 
         return "Registered %d services in package %s" % (len(service_classes), package)
 
@@ -44,7 +33,7 @@ class RestServer:
         """
         Unregisters a service module that was previously registered.
         """
-        self.registry.unregister(service)
+        self.client_mediator.handle_unregistration(service)
 
     def invoke(self, image, service):
         """
@@ -58,21 +47,7 @@ class RestServer:
         body = request.json
 
         # Load the service class to get the Client class from.
-        service_class = self.registry.get(service)
-
-        # Build a wrapper for the invocation.
-        client = ThriftClient(service_class)
-        # Send the invocation to the queue.
-        response = client.send(service, request)
-
-        # Invoke the worker in the container.
-        container = ComputomeContainer(image)
-        # TODO(orlade): Run the worker script.
-        mount_dir = '_mount'
-        # mount = 'implant:/%s:ro' % mount_dir
-        # container.run('python /%s/work.py' % mount_dir, volume_arg=mount)
-
-        return response
+        return self.client_mediator.handle_invocation(image, service, body)
 
     def run(self):
         """
