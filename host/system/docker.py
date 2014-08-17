@@ -22,7 +22,7 @@ class Container:
         self.package = package
 
     @staticmethod
-    def _execute(arguments):
+    def _execute(arguments, async=False):
         """
         Executes Docker with the given arguments.
 
@@ -32,9 +32,12 @@ class Container:
         # TODO(orlade): Allow return of container stdout.
         arguments = ['sudo', 'docker'] + arguments
         print('Executing $ %s' % ' '.join(arguments))
-        return subprocess.call(arguments)
+        if async:
+            return subprocess.Popen(arguments)
+        else:
+            return subprocess.call(arguments)
 
-    def run(self, command, volume_arg=None):
+    def run(self, command, volume_arg=None, links=[], async=False):
         """
         Executes the given command in the terminal of the container.
 
@@ -54,9 +57,12 @@ class Container:
         if volume_arg is not None:
             arguments += ['-v', volume_arg]
 
+        if len(links) > 0:
+            arguments += ['--link'] + ['%s:%s' % (link, link) for link in links]
+
         arguments += [self.image] + command
 
-        return self._execute(arguments)
+        return self._execute(arguments, async=async)
 
     def kill(self):
         """
@@ -73,6 +79,7 @@ class ComputomeContainer(Container):
         dependency).
 
         :param host_dir: The directory on the host machine in which Thrift's generated directories will be compiled.
+        :return: The output directory for the generated Thrift code.
         """
         # The location that the model API files should be stored.
         api_dir_name = 'api'
@@ -98,6 +105,7 @@ class ComputomeContainer(Container):
         thrift_command = 'thrift --gen py -o %s %s' % (package_dir, thrift_path)
         print('Executing: %s' % thrift_command)
         subprocess.call(thrift_command.split(' '))
+        return package_dir
 
 
 def image_to_package_name(image_id):

@@ -1,19 +1,34 @@
+import os
+
+from host.system.constants import PACKAGE_ROOT
+
+
 class Registry:
     def __init__(self):
         self.__services = {}
+        self.__service_dirs = {}
 
-    def register(self, service, service_class):
+    def register(self, service, service_class, package_dir=None):
+        if package_dir is None:
+            package_dir = os.path.join(PACKAGE_ROOT, service_class)
         self.__services[service] = service_class
+        self.__service_dirs[service] = package_dir
 
-    def register_dict(self, service_classes):
+    def register_dict(self, service_classes, package_dir=None):
         """
         Adds all of the {service: module} map entries to the registry.
+
+        :param service_classes: A map of service names to modules.
+        :param package_dir: The directory into which the services were compiled.
         """
         for service in service_classes:
-            self.register(service, service_classes[service])
+            self.register(service, service_classes[service], package_dir)
 
     def unregister(self, service):
         del self.__services[service]
 
     def get(self, service):
         return self.__services[service]
+
+    def get_package_dir(self, service):
+        return self.__service_dirs[service]

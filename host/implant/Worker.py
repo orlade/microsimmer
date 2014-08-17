@@ -1,4 +1,6 @@
-import amqp
+import os
+
+import amqplib.client_0_8 as amqp
 
 
 class Worker:
@@ -18,13 +20,15 @@ class Worker:
         Establishes a connection to the worker's AMQP queue.
         """
         # Set up the connection.
+        # TODO(orlade): Extract details to environment.
         params = {
-            'host': 'localhost:5672',
-            'userid': 'worker',
-            'password': 'worker',
+            'host': '%s:%d' % (os.environ.get('MQ_PORT_5672_TCP_ADDR'), 5672),
+            'userid': 'guest',
+            'password': 'guest',
             'virtual_host': '/',
             'insist': False,
         }
+        print('Connecting to AMQP on %s' % params)
         self.connection = amqp.Connection(**params)
         self.channel = self.connection.channel()
 
@@ -32,6 +36,7 @@ class Worker:
         """
         Initialises the request and result queues.
         """
+        # TODO(orlade): Extract details to environment.
         self.channel.exchange_declare(exchange=self.exchange, type='direct', durable=True, auto_delete=False)
 
         self.channel.queue_declare(queue=self.requests, durable=True, auto_delete=False)
@@ -40,22 +45,20 @@ class Worker:
         self.channel.queue_declare(queue=self.results, durable=True, auto_delete=False)
         self.channel.queue_bind(queue=self.results, exchange=self.exchange, routing_key='res')
 
-    def handle_message(self, channel, method, properties, body):
+    def handle_message(self, msg):
         """
         Handles a message waiting on the incoming queue.
 
-        :param channel: The name of the channel the message was on.
-        :param method:
-        :param properties:
-        :param body: The contents of the message.
+        :param msg: The message received.
         """
-        assert False
-        print(" [x] Received %r, %s, %s, %s" % (body, channel, method, properties))
-        result = self.process(body)
+        print('Processing message: "%s"' % msg.body)
+        result = self.process(msg.body)
+        print('Computed result: %s' % str(result))
 
         msg = amqp.Message(result)
         msg.properties['delivery_mode'] = 2
         self.channel.basic_publish(msg, exchange=self.exchange, routing_key='res')
+        self.channel.basic_cancel('work')
 
     def process(self, body):
         """
@@ -73,5 +76,14 @@ class Worker:
         self._init_channel()
         self._init_queues()
 
-        self.channel.basic_consume(queue=self.requests, callback=self.handle_message, no_ack=True)
+        self.channel.basic_consume(queue=self.requests, callback=self.handle_message, no_ack=True, consumer_tag='work')
+
+        import time
+        t = 0
+        clock = time.time()
+        while t < 3:
+            print('Waiting to consume (t = %d)' % t)
+            self.channel.wait()
+            t = time.time() - clock
+            print('Nom (t = %d)' % t)
         self.connection.close()

@@ -1,6 +1,10 @@
 """
 Converts requests from the server into client calls.
 """
+from distutils import dir_util
+import shutil
+import os
+
 from host.middleware.registry import Registry
 from host.middleware.comm import ThriftClient
 from host.system.constants import PACKAGE_ROOT
@@ -26,14 +30,15 @@ class ClientMediator(object):
         print('Registering Docker container %s...' % docker_id)
 
         container = ComputomeContainer(docker_id)
-        container.compile_thrift()
+        # TODO(orlade): Make the results of this generation more well-known.
+        package_dir = container.compile_thrift()
 
         # TODO(orlade): Organise the contents of the package better.
         loader = ServiceLoader(self.reg_root)
         service_classes = loader.load_package(package)
 
         # TODO(orlade): Register service classes in a more persistent, reusable way.
-        self.registry.register_dict(service_classes)
+        self.registry.register_dict(service_classes, package_dir)
         # TODO(orlade): Register handler methods with services.
 
         return service_classes
@@ -52,28 +57,55 @@ class ClientMediator(object):
         """
         # Load the service class to get the Client class from.
         service_class = self.registry.get(service)
+        package_dir = self.registry.get_package_dir(service)
 
         # Invoke the worker in the container to process the request message once it's sent.
-        self.run_worker(image)
+        worker_dir = self.create_worker_dir(package_dir)
+        self.run_worker(image, worker_dir)
 
         # Build a wrapper for the invocation.
         client = ThriftClient(service_class)
         # Send the invocation to the queue.
         # Note: This will block until it receives a response.
+        print('Sending request message: %s' % body)
         result = client.send(method, body)
 
         return result
 
-    def run_worker(self, image):
+    def create_worker_dir(self, package_dir):
+        """
+        Creates a directory containing both the generated Thrift files and the implant files (including amqplib).
+        :return: The path of the created directory.
+        """
+        mount_dir = os.path.join(package_dir, 'mount')
+        if not os.path.isdir(mount_dir):
+            os.makedirs(mount_dir)
+
+        # Copy all of the implant files.
+        # TODO(orlade): Make variable.
+        implant_dir = '/home/oliver/dev/computome/host/implant'
+        dir_util.copy_tree(implant_dir, mount_dir, update=1)
+
+        # Copy the gen-py files.
+        gen_dir = os.path.join(package_dir)
+        dir_util.copy_tree(gen_dir, mount_dir, update=1)
+
+        # Copy the ServiceLoader module to load the service in the container.
+        models_path = os.path.join(implant_dir, '..', 'system', 'models.py')
+        shutil.copyfile(models_path, os.path.join(mount_dir, 'models.py'))
+
+        return mount_dir
+
+    def run_worker(self, image, package_dir):
         """
         Invokes the worker in the container to pull and process the request message.
         :param image:
         :return:
         """
-        print('Starting remote worker in image %s...' % image)
         container = ComputomeContainer(image)
-        # TODO(orlade): Run the worker script.
-        implant_dir = '/home/oliver/dev/computome/host/implant'
-        mount_dir = '_mount'
-        mount = '%s:/%s:ro' % (implant_dir, mount_dir)
-        container.run('-t python /%s/work.py' % mount_dir, volume_arg=mount)
+        mount_dir = '/mnt/computome'
+        mount = '%s:/%s:ro' % (package_dir, mount_dir)
+
+        # Run the worker process.
+        print('Starting remote worker in image %s...' % image)
+        container.run('python /%s/work.py' % mount_dir, volume_arg=mount, links=['mq'], async=True)

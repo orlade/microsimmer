@@ -1,3 +1,5 @@
+import os
+
 from amqplib.client_0_8.connection import Connection
 from amqplib_thrift.transports import TAMQTransport, TAMQServerTransport
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
@@ -17,12 +19,13 @@ class ThriftClient:
         res_queue = 'computome.res'
 
         amqp_params = {
-            'host': 'localhost:5672',
-            'userid': 'worker',
-            'password': 'worker',
+            'host': '%s:%d' % (os.environ.get('MQ_PORT_5672_TCP_ADDR', '172.17.0.2'), 5672),
+            'userid': 'guest',
+            'password': 'guest',
             'virtual_host': '/',
             'insist': False,
         }
+        print('Connecting client to AMQP on %s, %s => %s' % (amqp_params, req_queue, res_queue))
 
         # Open an AMQP channel.
         connection = Connection(**amqp_params)
@@ -57,7 +60,6 @@ class ThriftClient:
         print('Calling Thrift service method "%s" with arguments %s' % (method_name, arguments))
 
         # TODO(orlade): Fix blocking breaking tests.
-        assert False
         if arguments is None:
             method()
         else:

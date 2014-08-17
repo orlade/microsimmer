@@ -1,35 +1,34 @@
 import sys
-from sumo.api.meta import command
-from sumo.api.util import write_to_file, build_data_filename, generate_random_routes, generate_output_spec, \
+from util import write_to_file, build_data_filename, generate_random_routes, generate_output_spec, \
     SECONDS_IN_HOUR, read_file, convert_osm_to_sumo
-
-sys.path.append('gen-py')
 
 import subprocess
 import uuid
+
+command = 'sumo'
 
 class SumoServiceHandler():
     """
     Implements the SumoService interface.
     """
 
-    def call(self, arguments):
+    def call(self, clargs):
         """
         Invokes SUMO from the command line.
 
         Parameters:
-         - arguments: The command line arguments.
+         - clargs: The command line arguments.
         """
         args = [command]
-        for key in arguments.keys():
+        for key in clargs.keys():
             args.append(key)
-            if arguments[key] is not None:
-                args.append(arguments[key])
-        
+            if clargs[key] is not None:
+                args.append(clargs[key])
+
         code = subprocess.call(args)
         # TODO(orlade): Return output contents.
         return code
-        
+
     def randomDayHourly(self, network):
         """
         Simulates traffic for a day with random trips on the given network, with hourly output.

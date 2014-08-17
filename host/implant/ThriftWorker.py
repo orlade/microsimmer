@@ -1,6 +1,8 @@
-from host.implant.Worker import Worker
+from Worker import Worker
 
-from sumo.api import meta
+# TODO(orlade): Clean up imports.
+from models import ServiceLoader
+from handler import SumoServiceHandler
 
 from thrift.transport.TTransport import TMemoryBuffer
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
@@ -8,13 +10,19 @@ from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 class ThriftWorker(Worker):
 
     def __init__(self, request_queue, result_queue, exchange='computome'):
-        super(Worker, self).__init__()
+        #super(Worker, self).__init__()
         self.exchange = exchange
         self.requests = request_queue
         self.results = result_queue
         self.connection = None
 
-        self.processor = meta.build_processor('sumo')
+        handler = SumoServiceHandler()
+
+        # TODO(orlade): Make variable.
+        service_name = 'SumoService'
+        loader = ServiceLoader('/mnt')
+        service = loader.load_package('computome')[service_name]
+        self.processor = service.Processor(handler)
 
     def process(self, body):
         """

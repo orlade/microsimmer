@@ -12,7 +12,7 @@ service SumoService {
    */
   xml call(
     /** The command line arguments. */
-    1:map<string, string> arguments
+    1:map<string, string> clargs
   )
 
   /**
