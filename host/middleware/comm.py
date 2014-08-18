@@ -37,10 +37,11 @@ class ThriftClient:
         channel.queue_bind(queue=req_queue, exchange=exchange, routing_key='req')
 
         channel.queue_declare(queue=res_queue, durable=True, auto_delete=False)
-        # channel.queue_bind(queue=res_queue, exchange=exchange, routing_key='res')
+        channel.queue_bind(queue=res_queue, exchange=exchange, routing_key='res')
 
         # Create transports.
-        self.__treq = TAMQTransport(channel, exchange, 'req', res_queue)
+        # Note: The queue kwarg actually specifies the routing key that the response will be marked with.
+        self.__treq = TAMQTransport(channel, exchange, 'req', queue=res_queue)
 
         # Create protocols.
         req_prot = TBinaryProtocol(self.__treq)
@@ -57,10 +58,10 @@ class ThriftClient:
         :return: The response from the client.
         """
         method = getattr(self.client, method_name)
-        print('Calling Thrift service method "%s" with arguments %s' % (method_name, arguments))
-
         # TODO(orlade): Fix blocking breaking tests.
         if arguments is None:
+            print(' >> Calling Thrift service method "%s" with no arguments' % method_name)
             method()
         else:
+            print(' >> Calling Thrift service method "%s" with arguments %s' % (method_name, arguments))
             return method(*arguments)

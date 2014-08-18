@@ -1,6 +1,12 @@
 import os
+from amqplib_thrift.factories import TAMQOutputTransportFactory, TAMQInputTransportFactory
+from thrift.transport.TSocket import TSocket
+from thrift.server import TServer
 
 import amqplib.client_0_8 as amqp
+from amqplib_thrift.transports import TAMQTransport, TAMQServerTransport
+from thrift.protocol import TBinaryProtocol
+from thrift.transport import TTransport
 
 
 class Worker:
@@ -14,6 +20,8 @@ class Worker:
         self.requests = request_queue
         self.results = result_queue
         self.connection = None
+        # Set in sublcass.
+        self.processor = None
 
     def _init_channel(self):
         """
@@ -22,13 +30,13 @@ class Worker:
         # Set up the connection.
         # TODO(orlade): Extract details to environment.
         params = {
-            'host': '%s:%d' % (os.environ.get('MQ_PORT_5672_TCP_ADDR'), 5672),
+            'host': '%s:%d' % (os.environ.get('MQ_PORT_5672_TCP_ADDR', '172.17.0.2'), 5672),
             'userid': 'guest',
             'password': 'guest',
             'virtual_host': '/',
             'insist': False,
         }
-        print('Connecting to AMQP on %s' % params)
+        print('Connecting container to AMQP on %s' % params)
         self.connection = amqp.Connection(**params)
         self.channel = self.connection.channel()
 
@@ -76,14 +84,37 @@ class Worker:
         self._init_channel()
         self._init_queues()
 
-        self.channel.basic_consume(queue=self.requests, callback=self.handle_message, no_ack=True, consumer_tag='work')
 
-        import time
-        t = 0
-        clock = time.time()
-        while t < 3:
-            print('Waiting to consume (t = %d)' % t)
-            self.channel.wait()
-            t = time.time() - clock
-            print('Nom (t = %d)' % t)
-        self.connection.close()
+        # Create incoming request transport.
+        treq = TAMQServerTransport(self.channel, self.requests)
+
+        itfactory = TAMQInputTransportFactory()
+        otfactory = TAMQOutputTransportFactory(self.channel, self.exchange)
+        pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+
+        server = TServer.TSimpleServer(self.processor, treq, itfactory, otfactory, pfactory, pfactory)
+
+        # You could do one of these for a multithreaded server
+        # server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
+        #server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+
+        print 'Starting the server...'
+        server.serve()
+        print 'done.'
+
+        # self.processor
+        #
+        # self.client = service_class.Client(req_prot)
+
+        # self.channel.basic_consume(queue=self.requests, callback=self.handle_message, no_ack=True, consumer_tag='work')
+        #
+        # import time
+        # t = 0
+        # clock = time.time()
+        # while t < 3:
+        #     print('Waiting to consume (t = %d)' % t)
+        #     self.channel.wait()
+        #     t = time.time() - clock
+        #     time.sleep(1)
+        #     print('Nom (t = %d)' % t)
+        # #self.connection.close()

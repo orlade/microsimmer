@@ -31,7 +31,7 @@ class Container:
         """
         # TODO(orlade): Allow return of container stdout.
         arguments = ['sudo', 'docker'] + arguments
-        print('Executing $ %s' % ' '.join(arguments))
+        print(' $$ Executing: %s [async=%s]' % (' '.join(arguments), async))
         if async:
             return subprocess.Popen(arguments)
         else:

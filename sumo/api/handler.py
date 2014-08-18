@@ -22,12 +22,14 @@ class SumoServiceHandler():
         args = [command]
         for key in clargs.keys():
             args.append(key)
-            if clargs[key] is not None:
+            if clargs[key] is not None and len(clargs[key]) > 0:
                 args.append(clargs[key])
 
-        code = subprocess.call(args)
-        # TODO(orlade): Return output contents.
-        return code
+        print('Calling SUMO with arguments: %s' % args)
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+        output = proc.stdout.read()
+        print ('Output was: %s' % output)
+        return output
 
     def randomDayHourly(self, network):
         """

@@ -104,8 +104,8 @@ class ClientMediator(object):
         """
         container = ComputomeContainer(image)
         mount_dir = '/mnt/computome'
-        mount = '%s:/%s:ro' % (package_dir, mount_dir)
+        mount = '%s:%s:ro' % (package_dir, mount_dir)
 
         # Run the worker process.
-        print('Starting remote worker in image %s...' % image)
-        container.run('python /%s/work.py' % mount_dir, volume_arg=mount, links=['mq'], async=True)
+        print(' >> Starting remote worker in image %s...' % image)
+        container.run('python %s/work.py' % mount_dir, volume_arg=mount, links=['mq'], async=True)
