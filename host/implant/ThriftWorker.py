@@ -7,22 +7,22 @@ from handler import SumoServiceHandler
 from thrift.transport.TTransport import TMemoryBuffer
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
-class ThriftWorker(Worker):
 
+class ThriftWorker(Worker):
     def __init__(self, request_queue, result_queue, exchange='computome'):
-        #super(Worker, self).__init__()
+        super(ThriftWorker, self).__init__(request_queue, result_queue, exchange)
         self.exchange = exchange
         self.requests = request_queue
         self.results = result_queue
-        self.connection = None
 
+    def build_processor(self):
         handler = SumoServiceHandler()
 
         # TODO(orlade): Make variable.
         service_name = 'SumoService'
         loader = ServiceLoader('/mnt')
         service = loader.load_package('computome')[service_name]
-        self.processor = service.Processor(handler)
+        return service.Processor(handler)
 
     def process(self, body):
         """

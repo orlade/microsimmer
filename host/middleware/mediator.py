@@ -69,6 +69,7 @@ class ClientMediator(object):
         # Note: This will block until it receives a response.
         print('Sending request message: %s' % body)
         result = client.send(method, body)
+        print('Received response message: %s' % result)
 
         return result
 
@@ -82,13 +83,16 @@ class ClientMediator(object):
             os.makedirs(mount_dir)
 
         # Copy all of the implant files.
-        # TODO(orlade): Make variable.
+        # TODO(orlade): Make environment variables.
         implant_dir = '/home/oliver/dev/computome/host/implant'
-        dir_util.copy_tree(implant_dir, mount_dir, update=1)
-
+        thrift_dir = '/usr/local/lib/python2.7/dist-packages/thrift'
+        amqplib_dir = '/usr/local/lib/python2.7/dist-packages/amqplib'
+        amqplib_thrift_dir = '/usr/local/lib/python2.7/dist-packages/amqplib_thrift'
         # Copy the gen-py files.
         gen_dir = os.path.join(package_dir)
-        dir_util.copy_tree(gen_dir, mount_dir, update=1)
+
+        for lib_dir in [implant_dir, thrift_dir, amqplib_dir, amqplib_thrift_dir, gen_dir]:
+            dir_util.copy_tree(lib_dir, mount_dir, update=1)
 
         # Copy the ServiceLoader module to load the service in the container.
         models_path = os.path.join(implant_dir, '..', 'system', 'models.py')

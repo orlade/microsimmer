@@ -10,4 +10,6 @@ if __name__ == '__main__':
 
     arguments = [{'--help': ''}]
 
-    server.invoke('pie21/sumo', 'SumoService', 'call', arguments)
+    response = server.invoke('pie21/sumo', 'SumoService', 'call', arguments)
+
+    print(' << Server response: %s' % response)
