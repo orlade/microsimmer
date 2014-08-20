@@ -3,3 +3,6 @@
 gen-*
 *.*~
 *.pyc
+
+# Sphinx docs
+/docs/_*
