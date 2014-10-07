@@ -23,5 +23,8 @@ class ThriftHttpWorker(object):
         server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 
         print 'Starting the server...'
-        server.serve()
+        try:
+            server.serve()
+        except Exception as e:
+            print 'Server error: %s' % e
         print 'Server closed.'

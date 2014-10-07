@@ -1,5 +1,8 @@
 import subprocess
 import sys
+from hamcrest.core import assert_that
+from hamcrest.library.text.stringstartswith import starts_with
+
 sys.path.append('../../..')
 sys.path.append('../../../host/system')
 sys.path.append('../../../sumo/api')
@@ -17,22 +20,20 @@ xml_path = 'C:\dev\workspace\computome\sumo\example\eichstaett.net.xml'
 
 def test_send_receive():
 
-    subprocess.Popen(['python', this_path])
+    # subprocess.call(['python', this_path], shell=True)
 
-    time.sleep(1)
+    time.sleep(3)
 
     print 'Starting client...'
     client = ThriftHttpClient(SumoService)
 
-    client.send('call', [{}])
-    print 'ping()'
+    result = client.send('call', [{}])
 
-    with open(xml_path, 'r') as f:
-        xml = f.read()
-        result = client.send('randomDayHourly', [xml])
+    # with open(xml_path, 'r') as f:
+    #     xml = f.read()
+    #     result = client.send('randomDayHourly', [xml])
 
-    assert result
+    assert_that(result, starts_with('SUMO sumo Version'))
 
 if __name__ == '__main__':
     worker = ThriftHttpWorker(SumoService).work()
-    time.sleep(1)
