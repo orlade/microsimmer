@@ -2,7 +2,7 @@ from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 from host.implant.network import amqp_connect, build_req_transport
 
 
-class ThriftClient:
+class ThriftAmqpClient:
     def __init__(self, service_class):
         self.service_class = service_class
 

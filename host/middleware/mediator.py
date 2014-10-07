@@ -6,7 +6,7 @@ import shutil
 import os
 
 from host.middleware.registry import Registry
-from host.middleware.comm import ThriftClient
+from host.middleware.comms.ThriftHttpClient import ThriftHttpClient
 from host.system.constants import PACKAGE_ROOT
 from host.system.docker import ComputomeContainer
 from host.system.models import ServiceLoader
@@ -64,7 +64,7 @@ class ClientMediator(object):
         self.run_worker(image, worker_dir)
 
         # Build a wrapper for the invocation.
-        client = ThriftClient(service_class)
+        client = ThriftHttpClient(service_class)
         # Send the invocation to the queue.
         # Note: This will block until it receives a response.
         print('Sending request message: %s' % body)

@@ -22,10 +22,11 @@ class SumoServiceHandler():
         args = [command]
         for key in clargs.keys():
             args.append(key)
-            if clargs[key] is not None and len(clargs[key]) > 0:
-                args.append(clargs[key])
+            # Append non-empty values after the flag.
+            if clargs[key] is not None and str(clargs[key]):
+                args.append(str(clargs[key]))
 
-        print('Calling SUMO with arguments: %s' % args)
+        print('Calling SUMO with arguments: %s' % ' '.join(args))
         proc = subprocess.Popen(args, stdout=subprocess.PIPE)
         output = proc.stdout.read()
         print ('Output was: %s' % output)
@@ -46,9 +47,9 @@ class SumoServiceHandler():
         output_file_path = build_data_filename(job, 'output')
         
         write_to_file(net_file_path, network)
-        write_to_file(route_file_path, generate_random_routes())
+        generate_random_routes(job)
         write_to_file(adtl_file_path, generate_output_spec(output_file_path))
-        
+
         args = {
             '--net-file': net_file_path,          # Network input file.
             '--route-files': route_file_path,     # Route input file.
@@ -58,9 +59,11 @@ class SumoServiceHandler():
             '--time-to-teleport': -1,             # Disable teleportation for vehicles that get stuck.
             '-W': None,                           # Disable warning messages.
         }
-        if self.call(args) != 0:
+
+        return_code = self.call(args)
+        if return_code != 0:
             # TODO(orlade): Throw exceptions.
-            return False
+            return return_code
         
         return read_file(output_file_path)
         
