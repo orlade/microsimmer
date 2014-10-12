@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE experiments SYSTEM "behaviorspace.dtd">
+<experiments>
+  <experiment name="Quxperiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="42"/>
+    <metric>count patches with [pcolor = foo]</metric>
+    <enumeratedValueSet variable="bar">
+      <value value="baz"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>

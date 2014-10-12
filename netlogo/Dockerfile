@@ -16,9 +16,3 @@ RUN mv netlogo-5.1.0 /opt/netlogo
 
 # Copy the API directory across.
 ADD api /api
-
-# Ensure the installation works. If this call fails, the whole build will fail.
-RUN /opt/netlogo/netlogo-headless.sh \
-      --model "/opt/netlogo/models/Sample Models/Biology/Evolution/Altruism.nlogo" \
-      --experiment MyExperiment \
-      --table /test.csv
