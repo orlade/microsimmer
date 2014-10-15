@@ -91,7 +91,7 @@ class ComputomeContainer(Container):
         # The location to copy the API files into for compilation.
         package_dir = os.path.join(host_dir, self.package)
         if not os.path.isdir(package_dir):
-            os.mkdir(package_dir)
+            os.makedirs(package_dir)
 
         # The Docker mount (volume) argument.
         mount = '%s:%s' % (package_dir, mount_dir)
