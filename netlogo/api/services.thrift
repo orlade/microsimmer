@@ -26,9 +26,9 @@ service NetLogoService {
     4:double altruismBenefit,
     5:double disease,
     6:double harshness,
-    7:int numTicks
+    7:i32 numTicks
   )
-  // TODO: Termination conditions, step-by-step results, interactive sampling, etc.
+  // TODO: Termination conditions, interactive sampling, etc.
 
   // TODO: Other models.
 

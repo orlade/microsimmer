@@ -7,6 +7,7 @@ from uuid import uuid4
 from netlogo.api.experiment import Experiment
 
 NETLOGO_HOME = '/opt/netlogo'
+MODEL_HOME= '%s/models/Sample Models' % NETLOGO_HOME
 COMMAND = '%s/netlogo-headless.sh' % NETLOGO_HOME
 
 
@@ -58,6 +59,7 @@ class NetLogoServiceHandler(object):
         job = uuid4()
         exp_path = '/var/computome/%s/experiment.xml' % job
         out_path = '/var/computome/%s/out.csv' % job
+        model = '%s/Biology/Evolution/Altruism.nlogo' % MODEL_HOME
 
         params = {
             'altruistic-probability': altruisticProbability,
@@ -73,7 +75,6 @@ class NetLogoServiceHandler(object):
         exp.add_metric(color='green')
         exp.write_xml(exp_path)
 
-        model = '%s/models/Sample Models/Biology/Evolution/Altruism.nlogo' % NETLOGO_HOME
         self.call_experiment(model, exp_path, exp.name, out_path)
 
         with open(out_path, 'r') as out_file:
