@@ -1,4 +1,4 @@
-% rebase('base.tpl', title='Page Title')
+% rebase('base.tpl', title='Home')
 
 <h2>Register New Container</h2>
 <form method="POST" action="/services/register">
@@ -6,11 +6,7 @@
     <input type="submit" />
 </form>
 
-% if packages:
+% if services:
 <h2>Registered Containers</h2>
-<ul>
-    % for package in packages:
-    <li>{{package}}</li>
-    % end
-</ul>
+% include('services/list.tpl', services=services)
 %end

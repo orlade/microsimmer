@@ -1,11 +1,19 @@
+import os
 import bottle
-from bottle import get, post, delete, request, template
+from bottle import get, post, delete, request, redirect
 from host.middleware.mediator import ClientMediator
 
 from host.system.docker import image_to_package_name
 
 # The path to the views from the app's root directory.
 VIEW_PATH = ['./host/server/views']
+
+
+def template(*args, **kwargs):
+    """Builds and renders a Bottle template with the lookup path set correctly."""
+    kwargs['template_lookup'] = VIEW_PATH
+    return bottle.template(*args, **kwargs)
+
 
 class RestServer:
     def __init__(self, client_mediator=None):
@@ -48,21 +56,19 @@ class RestServer:
         """
         Starts up the HTTP server on port 80.
         """
+
         @get('/')
         def home():
             packages = self.client_mediator.registry.get_registered_packages()
-            return template('home.tpl', packages=packages, template_lookup=VIEW_PATH)
+            return template('home.tpl', services=packages)
 
         # TODO(orlade): Replace with decorators on RestServer methods.
         @post('/services/register')
         def register():
             docker_id = request.params.docker_id
             package = request.params.package
-            return self.register_package(docker_id, package)
-
-        @delete('/services/<service_id>')
-        def unregister(service):
-            return self.unregister_package(service)
+            self.register_package(docker_id, package)
+            redirect('/')
 
         # TODO(orlade): Proper namespacing for services.
         @get('/services/invoke/<image>/<service_name>')
@@ -71,4 +77,14 @@ class RestServer:
             body = request.json
             return self.invoke(image, service, body)
 
-        bottle.run(host='localhost', port=80, debug=True)
+        @get('/services/<service>/unregister')
+        def confirm_unregister(service):
+            return template('services/unregister.tpl', service=service)
+
+        @post('/services/<service>/unregister')
+        def unregister(service):
+            self.unregister_package(service)
+            redirect('/')
+
+        # Run
+        bottle.run(host='0.0.0.0', port=int(os.environ.get('PORT', 80)), debug=True)
