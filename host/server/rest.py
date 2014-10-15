@@ -60,15 +60,15 @@ class RestServer:
         @get('/')
         def home():
             packages = self.client_mediator.registry.get_registered_packages()
-            return template('home.tpl', services=packages)
+            return template('home.tpl', packages=packages)
 
-        @get('/services/<service_name>')
-        def detail(service_name):
-            service = self.client_mediator.registry.get(service_name)
-            return template('services/detail.tpl', name=service_name, service=service)
+        @get('/packages/<package_name>')
+        def detail(package_name):
+            package = self.client_mediator.registry.get(package_name)
+            return template('packages/detail.tpl', name=package_name, package=package)
 
         # TODO(orlade): Replace with decorators on RestServer methods.
-        @post('/services/register')
+        @post('/packages/register')
         def register():
             docker_id = request.params.docker_id
             package = request.params.package
@@ -76,19 +76,19 @@ class RestServer:
             redirect('/')
 
         # TODO(orlade): Proper namespacing for services.
-        @get('/services/invoke/<image>/<service_name>')
-        def invoke(image, service):
+        @get('/packages/invoke/<package>/<service>')
+        def invoke(package, service):
             # Prepare the arguments to invoke the method with.
             body = request.json
-            return self.invoke(image, service, body)
+            return self.invoke(package, service, body)
 
-        @get('/services/<service>/unregister')
-        def confirm_unregister(service):
-            return template('services/unregister.tpl', service=service)
+        @get('/packages/<package>/unregister')
+        def confirm_unregister(package):
+            return template('packages/unregister.tpl', package=package)
 
-        @post('/services/<service>/unregister')
-        def unregister(service):
-            self.unregister_package(service)
+        @post('/packages/<package>/unregister')
+        def unregister(package):
+            self.unregister_package(package)
             redirect('/')
 
         # Run

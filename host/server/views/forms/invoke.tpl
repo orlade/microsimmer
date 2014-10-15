@@ -1,5 +1,5 @@
-<form method="POST" action="/services/invoke/{{image}}/{{service}}">
-    <p>Invoke <b></b>{{image}}/{{service}}</p>
+<form method="POST" action="/packages/invoke/{{package}}/{{service}}">
+    <p>Invoke <b></b>{{package}}/{{service}}</p>
     % for field in fields:
     <input name="field"/>
     % end
