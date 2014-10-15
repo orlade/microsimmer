@@ -32,3 +32,6 @@ class Registry:
 
     def get_package_dir(self, service):
         return self.__service_dirs[service]
+
+    def get_registered_packages(self):
+        return self.__services.keys()

@@ -1,9 +1,11 @@
 import bottle
-from bottle import get, post, delete, request
+from bottle import get, post, delete, request, template
 from host.middleware.mediator import ClientMediator
 
 from host.system.docker import image_to_package_name
 
+# The path to the views from the app's root directory.
+VIEW_PATH = ['./host/server/views']
 
 class RestServer:
     def __init__(self, client_mediator=None):
@@ -46,6 +48,11 @@ class RestServer:
         """
         Starts up the HTTP server on port 80.
         """
+        @get('/')
+        def home():
+            packages = self.client_mediator.registry.get_registered_packages()
+            return template('home.tpl', packages=packages, template_lookup=VIEW_PATH)
+
         # TODO(orlade): Replace with decorators on RestServer methods.
         @post('/services/register')
         def register():
