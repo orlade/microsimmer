@@ -39,33 +39,32 @@ class RestServer:
         """
         self.client_mediator.handle_unregistration(package)
 
-    def invoke(self, image, service, method, body):
+    def invoke(self, package, service, arguments):
         """
         Invokes a method of a previously-registered service class.
 
-        :param image: The Docker image that the service lives inside.
-        :param service: The name of the service containing the desired method.
-        :param method: The name of the method to invoke.
-        :param body: The JSON string body of the request specifying the method arguments.
+        :param package: The name of the service containing the desired method.
+        :param service: The name of the method to invoke.
+        :param arguments: The JSON string body of the request specifying the method arguments.
         :return: The result of the invocation.
         """
         # Load the service class to get the Client class from.
-        return self.client_mediator.handle_invocation(image, service, method, body)
+        image = self.client_mediator.registry.get_service_image(package)
+        return self.client_mediator.handle_invocation(image, package, service, arguments)
 
     def bind(self):
         """
-        Starts up the HTTP server on port 80.
+        Starts up the HTTP server on port 5000.
         """
-
         @get('/')
         def home():
             packages = self.client_mediator.registry.get_registered_packages()
             return template('home.tpl', packages=packages)
 
-        @get('/packages/<package_name>')
-        def detail(package_name):
-            package = self.client_mediator.registry.get(package_name)
-            return template('packages/detail.tpl', name=package_name, package=package)
+        @get('/packages/<package>')
+        def package_detail(package):
+            services = self.client_mediator.get_services(package)
+            return template('packages/detail.tpl', package=package, services=services)
 
         # TODO(orlade): Replace with decorators on RestServer methods.
         @post('/packages/register')
@@ -75,12 +74,18 @@ class RestServer:
             self.register_package(docker_id, package)
             redirect('/')
 
+        @get('/packages/<package>/<service>')
+        def service_detail(package, service):
+            params = self.client_mediator.get_services(package)[service]
+            return template('services/detail.tpl', package=package, service=service, params=params)
+
         # TODO(orlade): Proper namespacing for services.
-        @get('/packages/invoke/<package>/<service>')
+        @post('/packages/<package>/<service>/invoke')
         def invoke(package, service):
             # Prepare the arguments to invoke the method with.
-            body = request.json
-            return self.invoke(package, service, body)
+            params = self.client_mediator.get_services(package)[service]
+            args = [request.params[p] for p in params]
+            return self.invoke(package, service, args)
 
         @get('/packages/<package>/unregister')
         def confirm_unregister(package):

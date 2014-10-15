@@ -1,7 +1,14 @@
-<form method="POST" action="/packages/invoke/{{package}}/{{service}}">
+<form method="POST" action="/packages/{{package}}/{{service}}/invoke">
     <p>Invoke <b></b>{{package}}/{{service}}</p>
-    % for field in fields:
-    <input name="field"/>
-    % end
+
+    <table>
+        % for param in params:
+        <tr>
+            <td>{{param}}</td>
+            <td><input name="{{param}}"/></td>
+        </tr>
+        % end
+    </table>
+
     <input type="submit" value="Run"/>
 </form>

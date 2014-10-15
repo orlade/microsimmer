@@ -4,6 +4,7 @@ Converts requests from the server into client calls.
 from distutils import dir_util
 import shutil
 import os
+from host.middleware.inspector import get_thrift_methods
 
 from host.middleware.registry import Registry
 from host.middleware.comms.ThriftHttpClient import ThriftHttpClient
@@ -38,26 +39,30 @@ class ClientMediator(object):
         service_classes = loader.load_package(package)
 
         # TODO(orlade): Register service classes in a more persistent, reusable way.
-        self.registry.register_dict(service_classes, package_dir)
+        self.registry.register_dict(docker_id, service_classes, package_dir)
         # TODO(orlade): Register handler methods with services.
 
         return service_classes
 
     def handle_unregistration(self, package):
-        self.registry.unregister(package)
+        self.registry.unregister(self.registry.get(package))
 
-    def handle_invocation(self, image, service, method, body):
+    def get_services(self, package):
+        """Returns a list of services available in the named package."""
+        return get_thrift_methods(self.registry.get(package))
+
+    def handle_invocation(self, image, package, service, arguments):
         """
         Sends a request to invoke the given service through a Client.
         :param image: The Docker image that the service lives in.
-        :param service: The name of the service containing the desired method.
-        :param method: The name of the method to invoke.
-        :param body: The body of the request containing the arguments.
+        :param package: The name of the service containing the desired method.
+        :param service: The name of the method to invoke.
+        :param arguments: The body of the request containing the arguments.
         :return: The result of the invocation.
         """
         # Load the service class to get the Client class from.
-        service_class = self.registry.get(service)
-        package_dir = self.registry.get_package_dir(service)
+        service_class = self.registry.get(package)
+        package_dir = self.registry.get_package_dir(package)
 
         # Invoke the worker in the container to process the request message once it's sent.
         worker_dir = self.create_worker_dir(package_dir)
@@ -67,8 +72,8 @@ class ClientMediator(object):
         client = ThriftHttpClient(service_class)
         # Send the invocation to the queue.
         # Note: This will block until it receives a response.
-        print('Sending request message: %s' % body)
-        result = client.send(method, body)
+        print('Sending request message: %s' % arguments)
+        result = client.send(service, arguments)
         print('Received response message: %s' % result)
 
         return result
