@@ -62,6 +62,11 @@ class RestServer:
             packages = self.client_mediator.registry.get_registered_packages()
             return template('home.tpl', services=packages)
 
+        @get('/services/<service_name>')
+        def detail(service_name):
+            service = self.client_mediator.registry.get(service_name)
+            return template('services/detail.tpl', name=service_name, service=service)
+
         # TODO(orlade): Replace with decorators on RestServer methods.
         @post('/services/register')
         def register():

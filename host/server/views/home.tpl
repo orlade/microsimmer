@@ -1,10 +1,7 @@
 % rebase('base.tpl', title='Home')
 
 <h2>Register New Container</h2>
-<form method="POST" action="/services/register">
-    Docker ID: <input name="docker_id" />
-    <input type="submit" />
-</form>
+% include('forms/register.tpl')
 
 % if services:
 <h2>Registered Containers</h2>

@@ -1,1 +1,1 @@
-<li>{{service}} (<a href="/services/{{service}}/unregister">unregister</a>)</li>
+<li><a href="/services/{{service}}">{{service}}</a></li>
