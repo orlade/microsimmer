@@ -52,7 +52,7 @@ class RestServer:
         # Load the service class to get the Client class from.
         return self.client_mediator.handle_invocation(image, service, method, body)
 
-    def run(self):
+    def bind(self):
         """
         Starts up the HTTP server on port 80.
         """
@@ -91,5 +91,7 @@ class RestServer:
             self.unregister_package(package)
             redirect('/')
 
-        # Run
-        bottle.run(host='0.0.0.0', port=int(os.environ.get('PORT', 80)), debug=True)
+        return self
+
+    def run(self):
+        bottle.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
