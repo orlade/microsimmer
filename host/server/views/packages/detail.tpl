@@ -1,4 +1,4 @@
-% rebase('base.tpl', title='{{package}} Detail')
+% rebase('base.tpl', title='%s Detail' % package)
 
 <h2>{{package}}</h2>
 <div></div><a href="/packages/{{package}}/unregister">unregister</a></div>

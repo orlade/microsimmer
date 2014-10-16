@@ -1,4 +1,4 @@
-% rebase('base.tpl', title='{{package}}/{{service}} Detail')
+% rebase('base.tpl', title='%s/%s Detail' % (package, service))
 
 <h2>{{service}}</h2>
 
