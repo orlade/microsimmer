@@ -32,8 +32,8 @@ class ThriftHttpClient:
         # TODO(orlade): Fix blocking breaking tests.
         if arguments is None:
             print(' >> Calling Thrift service method "%s" with no arguments' % method_name)
-            method()
+            return method()
         else:
-            print_args = map(lambda s: (s[:72] + '...') if len(s) > 75 else s, arguments)
+            print_args = map(lambda s: (str(s)[:72] + '...') if len(str(s)) > 75 else s, arguments)
             print(' >> Calling Thrift service method "%s" with arguments %s' % (method_name, print_args))
             return method(*arguments)

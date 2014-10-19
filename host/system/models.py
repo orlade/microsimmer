@@ -53,6 +53,14 @@ class ServiceLoader:
         services = self.list_services([package])
         return {s: importlib.import_module(s) for s in services}
 
+    def load_handler(self, package):
+        api_dir = os.path.join(self.root, 'api')
+        sys.path.append(api_dir)
+        print('Added %s to path, loading handler...' % api_dir)
+        module = importlib.import_module('handler')
+        cls = module.__dict__['%sHandler' % package]
+        return cls
+
     @staticmethod
     def is_valid_package(package):
         num_files = len([name for name in os.listdir(package)])

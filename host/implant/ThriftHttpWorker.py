@@ -1,18 +1,19 @@
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
+from thrift.transport import TSocket, TTransport
 
 from models import ServiceLoader
-from handler import SumoServiceHandler
-from thrift.transport import TSocket, TTransport
 
 
 class ThriftHttpWorker(object):
-    def __init__(self, service_class):
-        self.service_class = service_class
+    def __init__(self, package):
+        self.package = package
 
     def build_processor(self):
-        handler = SumoServiceHandler()
-        return self.service_class.Processor(handler)
+        loader = ServiceLoader('/mnt')
+        service_class = loader.load_package('computome')[self.package]
+        handler_class = loader.load_handler(self.package)
+        return service_class.Processor(handler_class())
 
     def work(self):
         processor = self.build_processor()

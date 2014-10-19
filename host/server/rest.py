@@ -2,6 +2,7 @@ import os
 import bottle
 from bottle import get, post, delete, request, redirect
 from host.middleware.mediator import ClientMediator
+from host.server.transformer import FormTransformer
 
 from host.system.docker import image_to_package_name
 
@@ -20,6 +21,7 @@ class RestServer:
         if client_mediator is None:
             client_mediator = ClientMediator()
         self.client_mediator = client_mediator
+        self.transformer = FormTransformer()
 
     def register_package(self, docker_id, package=None):
         """
@@ -84,8 +86,8 @@ class RestServer:
         def invoke(package, service):
             # Prepare the arguments to invoke the method with.
             params = self.client_mediator.get_services(package)[service]
-            args = [request.params[p] for p in params]
-            return self.invoke(package, service, args)
+            args = self.transformer.parse(request, params)
+            return self.transformer.serialize(self.invoke(package, service, args))
 
         @get('/packages/<package>/unregister')
         def confirm_unregister(package):

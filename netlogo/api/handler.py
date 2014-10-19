@@ -4,7 +4,7 @@ import subprocess
 from timeit import default_timer as timer
 from uuid import uuid4
 
-from netlogo.api.experiment import Experiment
+from experiment import Experiment
 
 NETLOGO_HOME = '/opt/netlogo'
 MODEL_HOME= '%s/models/Sample Models' % NETLOGO_HOME

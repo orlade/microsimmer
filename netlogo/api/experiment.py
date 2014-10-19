@@ -1,10 +1,9 @@
 from distutils.dir_util import mkpath
 import os
-from os import O_EXCL, O_CREAT
 from lxml.etree import parse, SubElement, tostring
 
 # Path to the experiment template XML document.
-TEMPLATE_PATH = 'api/experiment-template.xml'
+TEMPLATE_PATH = '/api/experiment-template.xml'
 
 class Experiment(object):
     """

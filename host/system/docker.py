@@ -37,7 +37,7 @@ class Container:
         else:
             return subprocess.call(arguments)
 
-    def run(self, command, volume_arg=None, links=[], async=False):
+    def run(self, command, volume_arg=None, ports=None, links=None, async=False):
         """
         Executes the given command in the terminal of the container.
 
@@ -57,8 +57,12 @@ class Container:
         if volume_arg is not None:
             arguments += ['-v', volume_arg]
 
-        if len(links) > 0:
+        if not links is None:
             arguments += ['--link'] + ['%s:%s' % (link, link) for link in links]
+
+        if not ports is None:
+            for outside, inside in ports.items():
+                arguments += ['-p', '%s:%s' % (outside, inside)]
 
         arguments += [self.image] + command
 

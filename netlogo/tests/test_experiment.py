@@ -1,6 +1,12 @@
 import re
 from hamcrest.core.assert_that import assert_that
 from hamcrest.core.core.isequal import equal_to
+
+# Allow running tests from this directory.
+import sys
+
+sys.path.append('..')
+
 from netlogo.api.experiment import Experiment
 from netlogo.api.handler import NetLogoServiceHandler
 
