@@ -13,7 +13,8 @@ from host.system.docker import ComputomeContainer
 from host.system.models import ServiceLoader
 
 PYTHON_PACKAGE_PATH = '/usr/local/lib/python2.7/dist-packages'
-COMPUTOME_PATH = '/home/oliver/dev/computome'
+COMPUTOME_HOME = '/opt/computome'
+
 
 class ClientMediator(object):
     def __init__(self, registry=None, reg_root=PACKAGE_ROOT):
@@ -69,6 +70,7 @@ class ClientMediator(object):
         # Invoke the worker in the container to process the request message once it's sent.
         worker_dir = self.create_worker_dir(package_dir)
         self.run_worker(image, package, worker_dir)
+        # TODO(orlade): Retrieve assigned port and pass into Client.
 
         import time
 
@@ -94,7 +96,7 @@ class ClientMediator(object):
         # Copy all of the implant files.
         # TODO(orlade): Make environment variables.
         copy_dirs = {
-            '': '%s/host/implant' % COMPUTOME_PATH,
+            '': '%s/host/implant' % COMPUTOME_HOME,
             'thrift': '%s/thrift' % PYTHON_PACKAGE_PATH,
             'gen-py': os.path.join(package_dir, 'gen-py'),
             # 'amqplib': '%s/amqplib' % PYTHON_PACKAGE_PATH,
@@ -105,7 +107,7 @@ class ClientMediator(object):
             dir_util.copy_tree(path, os.path.join(mount_dir, key), update=1)
 
         # Copy the ServiceLoader module to load the service in the container.
-        models_path = os.path.join(COMPUTOME_PATH, 'host', 'system', 'models.py')
+        models_path = os.path.join(COMPUTOME_HOME, 'host', 'system', 'models.py')
         shutil.copyfile(models_path, os.path.join(mount_dir, 'models.py'))
 
         return mount_dir
