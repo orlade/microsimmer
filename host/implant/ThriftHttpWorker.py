@@ -12,7 +12,9 @@ class ThriftHttpWorker(object):
     def build_processor(self):
         loader = ServiceLoader('/mnt')
         service_class = loader.load_package('computome')[self.package]
+        print 'Loaded service class for %s: %s' % (self.package, service_class)
         handler_class = loader.load_handler(self.package)
+        print 'Loaded handler class for %s: %s' % (self.package, handler_class)
         return service_class.Processor(handler_class())
 
     def work(self):

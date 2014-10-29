@@ -4,12 +4,13 @@ Converts requests from the server into client calls.
 from distutils import dir_util
 import shutil
 import os
+from uuid import uuid4
 from host.middleware.inspector import get_thrift_methods
 
 from host.middleware.registry import Registry
 from host.middleware.comms.ThriftHttpClient import ThriftHttpClient
 from host.system.constants import PACKAGE_ROOT
-from host.system.docker import ComputomeContainer
+from host.system.docker import ComputomeContainer, stop_container
 from host.system.models import ServiceLoader
 
 PYTHON_PACKAGE_PATH = '/usr/local/lib/python2.7/dist-packages'
@@ -69,20 +70,25 @@ class ClientMediator(object):
 
         # Invoke the worker in the container to process the request message once it's sent.
         worker_dir = self.create_worker_dir(package_dir)
-        self.run_worker(image, package, worker_dir)
+        worker_name = self.run_worker(image, package, worker_dir)
         # TODO(orlade): Retrieve assigned port and pass into Client.
 
         import time
 
-        time.sleep(2)
+        time.sleep(1)
 
         # Build a wrapper for the invocation.
         client = ThriftHttpClient(service_class)
         # Send the invocation to the queue.
         # Note: This will block until it receives a response.
-        print('Sending request message: %s' % arguments)
+        truncate = lambda s: (str(s)[:72] + '...') if len(str(s)) > 75 else s
+        print_args = map(truncate, arguments)
+        print('Sending request message: %s' % print_args)
+
         result = client.send(service, arguments)
-        print('Received response message: %s' % result)
+        print('Received response message: %s' % truncate(result))
+
+        stop_container(worker_name)
 
         return result
 
@@ -126,4 +132,7 @@ class ClientMediator(object):
         # Run the worker process.
         print(' >> Starting remote worker in image %s...' % image)
         # links=['mq']
-        container.run('python %s/work.py %s' % (mount_dir, package), volume_arg=mount, ports=ports, async=True)
+        name = str(uuid4())
+        container.run('python %s/work.py %s' % (mount_dir, package), volume_arg=mount, ports=ports, async=True,
+                      name=name)
+        return name

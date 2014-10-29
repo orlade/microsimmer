@@ -37,7 +37,7 @@ class Container:
         else:
             return subprocess.call(arguments)
 
-    def run(self, command, volume_arg=None, ports=None, links=None, async=False):
+    def run(self, command, volume_arg=None, ports=None, links=None, async=False, name=None):
         """
         Executes the given command in the terminal of the container.
 
@@ -52,6 +52,9 @@ class Container:
 
         # TODO(orlade): Determine why -t is necessary.
         arguments = ['run', '-t']
+
+        if not name is None:
+            arguments += ['--name'] + [name]
 
         # Insert the volume mounting argument if requested.
         if volume_arg is not None:
@@ -119,3 +122,9 @@ def image_to_package_name(image_id):
     :return:
     """
     return image_id.replace('/', '_')
+
+def stop_container(name):
+    """
+    Calls `docker stop` on the container with the given name.
+    """
+    Container._execute(['stop', name], async=True)
