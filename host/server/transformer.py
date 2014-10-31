@@ -24,7 +24,7 @@ class FormTransformer(object):
             elif param in request.params:
                 value = self.parse_value(request.params[param])
                 args.append(value)
-
+        print args
         return args
 
     def parse_value(self, value):
