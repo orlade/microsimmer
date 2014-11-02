@@ -88,10 +88,9 @@ class ClientMediator(object):
         try:
             result = client.send(service, arguments)
             print('Received response message: %s' % truncate(result))
+            return result
         finally:
             stop_container(worker_name)
-
-        return result
 
     def create_worker_dir(self, package_dir):
         """

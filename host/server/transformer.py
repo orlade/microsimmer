@@ -18,13 +18,30 @@ class FormTransformer(object):
             # Check files first. Empty if no files uploaded.
             file_param = FILE_PREFIX + param
             if file_param in request.files.keys():
-                value = self.parse_value(request.files.get(file_param).file.read())
+                value = self.parse_value(
+                    request.files.get(file_param).file.read())
                 args.append(value)
 
             elif param in request.params:
                 value = self.parse_value(request.params[param])
                 args.append(value)
-        print args
+        return args
+
+    def parse_display(self, request, service_params):
+        """
+        Parses the request arguments into a dictionary.
+        """
+        # TODO(orlade): Deduplicate logic for rendering.
+        args = {}
+        for param in service_params:
+            # Check files first. Empty if no files uploaded.
+            file_param = FILE_PREFIX + param
+            if file_param in request.files.keys():
+                # Return the filename for display instead of the contents.
+                args[param] = request.files.get(file_param).filename
+
+            elif param in request.params:
+                args[param] = self.parse_value(request.params[param])
         return args
 
     def parse_value(self, value):

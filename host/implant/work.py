@@ -3,6 +3,7 @@ Simple interface to create a Worker to processes incoming requests.
 """
 import sys
 
+sys.path.append('/')
 sys.path.append('/api')
 sys.path.append('/mnt/computome')
 sys.path.append('/mnt/computome/gen-py')

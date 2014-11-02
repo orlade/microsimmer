@@ -31,9 +31,11 @@ class RestServer:
         if not package:
             package = image_to_package_name(docker_id)
 
-        service_classes = self.client_mediator.handle_registration(docker_id, package)
+        service_classes = self.client_mediator.handle_registration(docker_id,
+                                                                   package)
 
-        return "Registered %d services in package %s" % (len(service_classes), package)
+        return "Registered %d services in package %s" % (
+            len(service_classes), package)
 
     def unregister_package(self, package):
         """
@@ -52,12 +54,14 @@ class RestServer:
         """
         # Load the service class to get the Client class from.
         image = self.client_mediator.registry.get_service_image(package)
-        return self.client_mediator.handle_invocation(image, package, service, arguments)
+        return self.client_mediator.handle_invocation(image, package, service,
+                                                      arguments)
 
     def bind(self):
         """
         Starts up the HTTP server on port 5000.
         """
+
         @get('/')
         def home():
             packages = self.client_mediator.registry.get_registered_packages()
@@ -66,7 +70,8 @@ class RestServer:
         @get('/packages/<package>')
         def package_detail(package):
             services = self.client_mediator.get_services(package)
-            return template('packages/detail.tpl', package=package, services=services)
+            return template('packages/detail.tpl', package=package,
+                            services=services)
 
         # TODO(orlade): Replace with decorators on RestServer methods.
         @post('/packages/register')
@@ -79,15 +84,20 @@ class RestServer:
         @get('/packages/<package>/<service>')
         def service_detail(package, service):
             params = self.client_mediator.get_services(package)[service]
-            return template('services/detail.tpl', package=package, service=service, params=params)
+            return template('services/detail.tpl', package=package,
+                            service=service, params=params)
 
-        # TODO(orlade): Proper namespacing for services.
         @post('/packages/<package>/<service>/invoke')
         def invoke(package, service):
             # Prepare the arguments to invoke the method with.
             params = self.client_mediator.get_services(package)[service]
             args = self.transformer.parse(request, params)
-            return self.transformer.serialize(self.invoke(package, service, args))
+            result = self.invoke(package, service, args)
+            response = self.transformer.serialize(result)
+            display_params = self.transformer.parse_display(request, params)
+            return template('output/result.tpl', package=package,
+                            service=service, params=display_params,
+                            result=response)
 
         @get('/packages/<package>/unregister')
         def confirm_unregister(package):
@@ -101,4 +111,5 @@ class RestServer:
         return self
 
     def run(self):
-        bottle.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+        bottle.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)),
+                   debug=True)
