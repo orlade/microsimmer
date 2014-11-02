@@ -51,7 +51,7 @@ class Container:
             command = str(command).split(' ')
 
         # TODO(orlade): Determine why -t is necessary.
-        arguments = ['run', '-t']
+        arguments = ['run', '-t', '--entrypoint', '/bin/sh']
 
         if not name is None:
             arguments += ['--name'] + [name]
@@ -67,7 +67,7 @@ class Container:
             for outside, inside in ports.items():
                 arguments += ['-p', '%s:%s' % (outside, inside)]
 
-        arguments += [self.image] + command
+        arguments += [self.image, '-c'] + [' '.join(command)]
 
         return self._execute(arguments, async=async)
 
@@ -127,4 +127,4 @@ def stop_container(name):
     """
     Calls `docker stop` on the container with the given name.
     """
-    Container._execute(['stop', name], async=True)
+    Container._execute(['stop', '-t', '1', name], async=True)
