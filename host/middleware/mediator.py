@@ -85,16 +85,18 @@ class ClientMediator(object):
         print_args = map(truncate, arguments)
         print('Sending request message: %s' % print_args)
 
-        result = client.send(service, arguments)
-        print('Received response message: %s' % truncate(result))
-
-        stop_container(worker_name)
+        try:
+            result = client.send(service, arguments)
+            print('Received response message: %s' % truncate(result))
+        finally:
+            stop_container(worker_name)
 
         return result
 
     def create_worker_dir(self, package_dir):
         """
-        Creates a directory containing both the generated Thrift files and the implant files (including amqplib).
+        Creates a directory containing both the generated Thrift files and the
+        implant files (including amqplib).
         :return: The path of the created directory.
         """
         mount_dir = os.path.join(package_dir, 'mount')
