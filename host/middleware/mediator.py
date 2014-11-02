@@ -42,7 +42,8 @@ class ClientMediator(object):
         loader = ServiceLoader(self.reg_root)
         service_classes = loader.load_package(package)
 
-        # TODO(orlade): Register service classes in a more persistent, reusable way.
+        # TODO(orlade): Register service classes in a more persistent, reusable
+        # way.
         self.registry.register_dict(docker_id, service_classes, package_dir)
         # TODO(orlade): Register handler methods with services.
 
@@ -68,7 +69,8 @@ class ClientMediator(object):
         service_class = self.registry.get(package)
         package_dir = self.registry.get_package_dir(package)
 
-        # Invoke the worker in the container to process the request message once it's sent.
+        # Invoke the worker in the container to process the request message once
+        # it's sent.
         worker_dir = self.create_worker_dir(package_dir)
         worker_name = self.run_worker(image, package, worker_dir)
         # TODO(orlade): Retrieve assigned port and pass into Client.
@@ -95,7 +97,7 @@ class ClientMediator(object):
     def create_worker_dir(self, package_dir):
         """
         Creates a directory containing both the generated Thrift files and the
-        implant files (including amqplib).
+        implant files.
         :return: The path of the created directory.
         """
         mount_dir = os.path.join(package_dir, 'mount')
@@ -106,24 +108,21 @@ class ClientMediator(object):
             '': '%s/host/implant' % COMPUTOME_HOME,
             'thrift': '%s/thrift' % PYTHON_PACKAGE_PATH,
             'gen-py': os.path.join(package_dir, 'gen-py'),
-            # 'amqplib': '%s/amqplib' % PYTHON_PACKAGE_PATH,
-            # 'amqplib_thrift': '%s/amqplib_thrift' % PYTHON_PACKAGE_PATH,
         }
 
         for key, path in copy_dirs.items():
             dir_util.copy_tree(path, os.path.join(mount_dir, key), update=1)
 
         # Copy the ServiceLoader module to load the service in the container.
-        models_path = os.path.join(COMPUTOME_HOME, 'host', 'system', 'models.py')
-        shutil.copyfile(models_path, os.path.join(mount_dir, 'models.py'))
+        models = os.path.join(COMPUTOME_HOME, 'host', 'system', 'models.py')
+        shutil.copyfile(models, os.path.join(mount_dir, 'models.py'))
 
         return mount_dir
 
     def run_worker(self, image, package, package_dir):
         """
-        Invokes the worker in the container to pull and process the request message.
-        :param image:
-        :return:
+        Invokes the worker in the container to pull and process the request
+        message.
         """
         container = ComputomeContainer(image)
         mount_dir = '/mnt/computome'
@@ -134,6 +133,6 @@ class ClientMediator(object):
         print(' >> Starting remote worker in image %s...' % image)
         # links=['mq']
         name = str(uuid4())
-        container.run('python %s/work.py %s' % (mount_dir, package), volume_arg=mount, ports=ports, async=True,
-                      name=name)
+        container.run('python %s/work.py %s' % (mount_dir, package),
+                      volume_arg=mount, ports=ports, async=True, name=name)
         return name
