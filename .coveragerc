@@ -1,0 +1,7 @@
+[run]
+source = host
+
+[report]
+omit =
+  */python?.?/*
+  */site-packages/nose/*
