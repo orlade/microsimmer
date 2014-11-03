@@ -14,7 +14,7 @@ from host.system.docker import ComputomeContainer, stop_container
 from host.system.models import ServiceLoader
 
 PYTHON_PACKAGE_PATH = '/usr/local/lib/python2.7/dist-packages'
-COMPUTOME_HOME = '/opt/computome'
+COMPUTOME_HOME = os.path.join(os.path.dirname(__file__), '..', '..')
 
 
 class ClientMediator(object):
