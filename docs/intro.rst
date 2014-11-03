@@ -2,7 +2,7 @@
  Introduction
 ==============
 
-What is Aerosol?
-================
+What is microSimmer?
+====================
 
 Good question!

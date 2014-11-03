@@ -11,12 +11,17 @@ VIEW_PATH = ['./host/server/views']
 
 
 def template(*args, **kwargs):
-    """Builds and renders a Bottle template with the lookup path set correctly."""
+    """
+    Builds and renders a Bottle template with the lookup path set correctly.
+    """
     kwargs['template_lookup'] = VIEW_PATH
     return bottle.template(*args, **kwargs)
 
 
 class RestServer:
+    """
+    Implements an HTTP REST server for registration and invocation.
+    """
     def __init__(self, client_mediator=None):
         if client_mediator is None:
             client_mediator = ClientMediator()
@@ -25,8 +30,9 @@ class RestServer:
 
     def register_package(self, docker_id, package=None):
         """
-        Registers a package to a Docker image ID. The request should contain a "docker_id" parameter specifying the ID
-        of the Docker image implementing the package.
+        Registers a package to a Docker image ID. The request should contain a
+        "docker_id" parameter specifying the ID of the Docker image implementing
+        the package.
         """
         if not package:
             package = image_to_package_name(docker_id)
@@ -49,7 +55,8 @@ class RestServer:
 
         :param package: The name of the service containing the desired method.
         :param service: The name of the method to invoke.
-        :param arguments: The JSON string body of the request specifying the method arguments.
+        :param arguments: The JSON string body of the request specifying the
+        method arguments.
         :return: The result of the invocation.
         """
         # Load the service class to get the Client class from.
